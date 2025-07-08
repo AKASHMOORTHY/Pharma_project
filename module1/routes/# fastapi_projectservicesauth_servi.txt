@@ -1,0 +1,51 @@
+# fastapi_project/services/auth_service.py
+
+import os
+from sqlalchemy.orm import Session
+from jose import JWTError, jwt
+from fastapi import HTTPException, status
+from dotenv import load_dotenv
+
+from fastapi_project.services.user_service import get_user_by_email
+from fastapi_project.utils.password import verify_password, hash_password
+from fastapi_project.utils.token import create_access_token, create_refresh_token
+from fastapi_project.models.user import User
+from fastapi_project.schemas.user import UserCreate
+
+load_dotenv()
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = "HS256"
+
+def authenticate_user(db: Session, username: str, password: str) -> User:
+    user = get_user_by_email(db, username)
+    if not user or not verify_password(password, user.hashed_password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+    return user
+
+def register_user(db: Session, user_in: UserCreate) -> User:
+    existing = get_user_by_email(db, user_in.email)
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    hashed = hash_password(user_in.password)
+    new_user = User(
+        username=user_in.username,
+        email=user_in.email,
+        full_name=user_in.full_name,
+        hashed_password=hashed,
+        role_id=user_in.role_id,
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
+
+def refresh_access_token(token: str) -> str:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        role: str = payload.get("role")
+        if not email or not role:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return create_access_token({"sub": email, "role": role})
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
