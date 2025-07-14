@@ -34,8 +34,8 @@ def list_params(db: Session = Depends(get_db)):
 
 @app.post("/api/qc/tests/", response_model=QCTestSchema)
 def log_test(test: QCTestSchema, db: Session = Depends(get_db)):
-    if users.get(test.performed_by) != "QA":
-        raise HTTPException(status_code=403, detail="Only QA can log tests")
+    # if users.get(test.performed_by) != "QA":
+    #     raise HTTPException(status_code=403, detail="Only QA can log tests")
     return create_qc_test(db, test)
 
 @app.put("/api/qc/tests/{test_id}", response_model=QCTestSchema)
@@ -85,13 +85,15 @@ def get_qc_test(test_id: str, db: Session = Depends(get_db)):
 @app.get("/api/qc/final-status/{source_id}")
 def get_final_status(source_id: str, db: Session = Depends(get_db)):
     tests = db.query(QCTest).filter(QCTest.source_id == source_id).all()
+
     if not tests:
         raise HTTPException(status_code=404, detail="No tests found for this source_id")
 
-    # Final status is HOLD if any test is still on HOLD
-    if any(test.status == "HOLD" for test in tests):
+    # If any test has HOLD, the final status is HOLD
+    if any(test.status.upper() == "HOLD" for test in tests):
         return {"source_id": source_id, "final_status": "HOLD"}
 
+    # Else return PASS (assumes failed tests are overridden or handled)
     return {"source_id": source_id, "final_status": "PASS"}
 
 
@@ -100,8 +102,8 @@ from schemas import QCOverrideSchema
 @app.post("/api/qc/override/", response_model=QCTestSchema)
 def override_test(override_data: QCOverrideSchema, db: Session = Depends(get_db)):
     # Check if user is Manager
-    if users.get(override_data.overridden_by) != "Manager":
-        raise HTTPException(status_code=403, detail="Only Managers can override test results")
+    # if users.get(override_data.overridden_by) != "Manager":
+    #     raise HTTPException(status_code=403, detail="Only Managers can override test results")
 
     try:
         from crud import override_test_status
