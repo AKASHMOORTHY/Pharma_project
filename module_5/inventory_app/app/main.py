@@ -7,4 +7,4 @@ app = FastAPI(title="Inventory & Material Movement API")
 # Base.metadata.create_all(bind=engine)
 
 
-app.include_router(inventory.router)
+app.include_router(inventory.router)  
