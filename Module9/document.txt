@@ -1,0 +1,37 @@
+Module 9: Notification & Escalation System 
+• Real-time alerts (QC fail, stock low, data anomaly) 
+• Escalation tree config (email/SMS) 
+• Notification center UI 
+
+
+Dummy User:
+| id | email                                       | full\_name |
+| -- | ------------------------------------------- | ---------- |
+| 1  | [akash@mail.com](mailto:akash@mail.com)     | Akash      |
+| 2  | [manager@mail.com](mailto:manager@mail.com) | Manager    |
+
+Create Notification:
+{
+  "recipient_id": 1,
+  "event_type": "QC Failure",
+  "message": "pH level exceeded safe limit for Batch 23",
+  "related_object_id": 1001
+}
+
+ Create Escalation Rule
+{
+  "event_type": "QC Failure",
+  "trigger_after_minutes": 1,
+  "escalate_to_id": 2
+}
+
+
+celery -A notification_services.app.celery_worker worker --loglevel=info --pool=solo
+
+celery -A notification_services.app.celery_worker.celery_app beat --loglevel=info
+
+PS C:\Users\akash\Desktop\pharma_project1\Module9> cd C:\Users\akash\Desktop\pharma_project1\Module9
+>> $env:PYTHONPATH="."
+>> python notification_services\add_user.py
+>>
+Users added successfully.
