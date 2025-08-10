@@ -1,0 +1,16 @@
+COMPLETE BATCHES
+batch_id,date,shift,status,duration,completed_stages,qc_result,operator
+7,2025-08-04,A,Completed,24.00h,1/1,Pass,Supervisor
+8,2025-08-04,B,Completed,96.00h,1/1,Pass,Abcd
+12,2025-08-05,B,Completed,192.00h,1/1,Pass,test1
+13,2025-08-05,B,Completed,192.00h,1/1,Pass,user1
+
+INCOMPLETE BATCHES
+batch_id,date,shift,status,duration,completed_stages,qc_result,operator
+9,2025-08-04,B,incompleted,144.00h,0/1,Pass,Manager
+11,2025-08-04,B,incompleted,192.00h,0/1,Pass,Manager
+
+QC SUMMARY
+total_qc_checks,27
+passed_qc,21
+failed_qc,6
